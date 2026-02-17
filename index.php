@@ -29,7 +29,6 @@ function parse_smilies($text) {
         ':nerd:' => '<img src="https://www.allsmileys.com/files/kolobok/light/63.gif" alt="*nerd*">',
         'XD' => '<img src="https://www.allsmileys.com/files/kolobok/light/52.gif" alt="XD">',
         ':dance:' => '<img src="https://www.allsmileys.com/files/kolobok/light/26.gif" alt="*dancing*">',
-        'kris+marduk' => '<img src="https://www.allsmileys.com/files/kolobok/light/41.gif" alt=!secret! >',
         ':beer:' => '<img src="https://www.allsmileys.com/files/kolobok/light/37.gif" alt=*cheers!* >',
     );
     return str_replace(array_keys($smilies), array_values($smilies), $text);
