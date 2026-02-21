@@ -227,7 +227,71 @@ input[type=submit] {
     ?>
     </div>
 
-<div class="section-title">MESSAGES</div>
+    <h3>MESSages:</h3>
+    <?php if (mysqli_num_rows($result) > 0): ?>
+        <table class="forum-table">
+            <tr>
+                <th>author</th>
+                <th>message</th>
+            </tr>
+            <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                <tr>
+                    <td class="post-username">
+                        <?php echo htmlspecialchars($row['username']); ?>
+                        <div class="post-date">
+                            <?php
+                            $timestamp = strtotime($row['created_at']);
+                            $now = time();
+                            $diff = $now - $timestamp;
+                            
+                            if ($diff < 60) {
+                                echo "just now";
+                            } elseif ($diff < 3600) {
+                                $minutes = floor($diff / 60);
+                                echo $minutes . " minute" . ($minutes != 1 ? "s" : "") . " ago";
+                            } elseif ($diff < 86400) {
+                                $hours = floor($diff / 3600);
+                                echo $hours . " hour" . ($hours != 1 ? "s" : "") . " ago";
+                            } elseif ($diff < 2592000) {
+                                $days = floor($diff / 86400);
+                                echo $days . " day" . ($days != 1 ? "s" : "") . " ago";
+                            } else {
+                                echo date("d.m.Y H:i", $timestamp);
+                            }
+                            ?>
+                        </div>
+                    </td>
+                    <td class="post-message">
+                        <?php
+                        $message = htmlspecialchars($row['message'], ENT_QUOTES, 'UTF-8');
+                        $message = parse_bbcodes($message);
+                        $message = parse_smilies($message);                   
+                        echo nl2br($message);
+                        ?>
+                    </td>
+                </tr>
+            <?php endwhile; ?>
+        </table>
+    <?php else: ?>
+        <p>theres nothig here...Be the first to text something!</p>
+    <?php endif; ?>
+
+    <div class="form-area">
+    
+    <div style="margin-bottom:10px; padding:5px; background:#d0d0d0; border:1px solid #999; font-family:Verdana; font-size:10pt;">
+        <span style="color:#666;">BB-codes:</span>
+        <a href="#" onclick="insertTag('[b]', '[/b]'); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[b]bold[/b]</a> |
+        <a href="#" onclick="insertTag('[i]', '[/i]'); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[i]italic[/i]</a> |
+        <a href="#" onclick="insertTag('[u]', '[/u]'); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[u]underline[/u]</a> |
+        <a href="#" onclick="insertTag('[quote]', '[/quote]'); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[quote]quote[/quote]</a> |
+        <a href="#" onclick="insertUrl(); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[url]link[/url]</a> |
+        <a href="#" onclick="insertImg(); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[img]image[/img]</a>
+    </div>
+    
+    <h4>write to a thread</h4>
+    <form method="POST" action="">
+        <label for="username">Name (or anonimous pipis):</label><br>
+        <input type="text" name="username" id="username" value="Pipis"><br><br>
 
 <table class="forum">
 <tr>
