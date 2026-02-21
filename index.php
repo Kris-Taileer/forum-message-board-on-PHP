@@ -194,6 +194,44 @@ input[type=submit] {
 .bb-panel a {
     text-decoration: none;
     color: #000000;
+    margin: 0 2px;
+}
+
+.bb-panel a[title] {
+    cursor: help;
+    border-bottom: 1px dashed #666;
+}
+
+
+.image-hint {
+    background: #fff0e0;
+    border: 1px solid #c60;
+    padding: 8px;
+    margin-bottom: 10px;
+    font-size: 11px;
+    line-height: 2;
+    color: #630;
+}
+
+.image-hint code {
+    background: #f0f0f0;
+    padding: 2px 4px;
+    border: 1px solid #999;
+    font-family: 'Courier New', monospace;
+}
+
+.image-hint .title {
+    font-weight: bold;
+    color: #000;
+}
+
+#enableNotifications {
+    background: #d4d0c8;
+    border: 2px outset #ffffff;
+    padding: 4px 12px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 10px;
 }
 
 .footer {
@@ -205,93 +243,28 @@ input[type=submit] {
 </style>
 </head>
 
-<button id="enableNotifications">Enable notifications</button>
-<script src="notifications.js"></script>
+<button id="enableNotifications">>> Enable notifications</button>
 
 <body>
 
 <div class="container">
 
- <div class="header">
+<div class="header">
     <?php
     $quotes = [
         "WELCOME TO the HELL, BITCH!",
         "PIPIS LOVES YOU",
         "SEND NUDES (OF YOUR CODE)",
-        "3.141592653589... - пароль админа",
+        "3.141592653589...",
         "KRIS+MARDUK FOREVER",
         "BEER HERE -> :beer:",
         "XD XD XD"
     ];
     echo $quotes[array_rand($quotes)];
     ?>
-    </div>
+</div>
 
-    <h3>MESSages:</h3>
-    <?php if (mysqli_num_rows($result) > 0): ?>
-        <table class="forum-table">
-            <tr>
-                <th>author</th>
-                <th>message</th>
-            </tr>
-            <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                <tr>
-                    <td class="post-username">
-                        <?php echo htmlspecialchars($row['username']); ?>
-                        <div class="post-date">
-                            <?php
-                            $timestamp = strtotime($row['created_at']);
-                            $now = time();
-                            $diff = $now - $timestamp;
-                            
-                            if ($diff < 60) {
-                                echo "just now";
-                            } elseif ($diff < 3600) {
-                                $minutes = floor($diff / 60);
-                                echo $minutes . " minute" . ($minutes != 1 ? "s" : "") . " ago";
-                            } elseif ($diff < 86400) {
-                                $hours = floor($diff / 3600);
-                                echo $hours . " hour" . ($hours != 1 ? "s" : "") . " ago";
-                            } elseif ($diff < 2592000) {
-                                $days = floor($diff / 86400);
-                                echo $days . " day" . ($days != 1 ? "s" : "") . " ago";
-                            } else {
-                                echo date("d.m.Y H:i", $timestamp);
-                            }
-                            ?>
-                        </div>
-                    </td>
-                    <td class="post-message">
-                        <?php
-                        $message = htmlspecialchars($row['message'], ENT_QUOTES, 'UTF-8');
-                        $message = parse_bbcodes($message);
-                        $message = parse_smilies($message);                   
-                        echo nl2br($message);
-                        ?>
-                    </td>
-                </tr>
-            <?php endwhile; ?>
-        </table>
-    <?php else: ?>
-        <p>theres nothig here...Be the first to text something!</p>
-    <?php endif; ?>
-
-    <div class="form-area">
-    
-    <div style="margin-bottom:10px; padding:5px; background:#d0d0d0; border:1px solid #999; font-family:Verdana; font-size:10pt;">
-        <span style="color:#666;">BB-codes:</span>
-        <a href="#" onclick="insertTag('[b]', '[/b]'); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[b]bold[/b]</a> |
-        <a href="#" onclick="insertTag('[i]', '[/i]'); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[i]italic[/i]</a> |
-        <a href="#" onclick="insertTag('[u]', '[/u]'); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[u]underline[/u]</a> |
-        <a href="#" onclick="insertTag('[quote]', '[/quote]'); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[quote]quote[/quote]</a> |
-        <a href="#" onclick="insertUrl(); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[url]link[/url]</a> |
-        <a href="#" onclick="insertImg(); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[img]image[/img]</a>
-    </div>
-    
-    <h4>write to a thread</h4>
-    <form method="POST" action="">
-        <label for="username">Name (or anonimous pipis):</label><br>
-        <input type="text" name="username" id="username" value="Pipis"><br><br>
+<div class="section-title">MESSAGES</div>
 
 <table class="forum">
 <tr>
@@ -329,7 +302,14 @@ BBCode:
 <a href="#" onclick="insertTag('[u]','[/u]');return false;">[u]</a> |
 <a href="#" onclick="insertTag('[quote]','[/quote]');return false;">[quote]</a> |
 <a href="#" onclick="insertUrl();return false;">[url]</a> |
-<a href="#" onclick="insertImg();return false;">[img]</a>
+<a href="#" onclick="insertImg();return false;" title="Only https:// images ending with .jpg, .png, .gif, .webp">[img]</a>
+</div>
+
+<div class="image-hint">
+    <span class="title">~Image rules:~</span><br>
+    • Use <strong>https://</strong> only<br>
+    • Allowed: <code>.jpg</code> <code>.jpeg</code> <code>.png</code> <code>.gif</code> <code>.webp</code><br>
+    • Example: <code>[img]https://site.com/image.jpg[/img]</code>
 </div>
 
 <form method="POST">
@@ -370,14 +350,14 @@ BBCode:
         file_put_contents($hits_file, $hits);
         ?>
         &copy; visited >>  <?php echo $hits; ?> | 
-        &copy; 2010 MySuperForum / works on PHP and MySQL(MariaDB)
-    </div>
+        &copy; 2010 MySuperForum
+</div>
 
 </div>
 
 <script>
 function insertTag(openTag, closeTag) {
-    var textarea = document.querySelector('textarea');
+    var textarea = document.querySelector('textarea[name="message"]');
     var start = textarea.selectionStart;
     var end = textarea.selectionEnd;
     textarea.value = textarea.value.substring(0, start) + openTag +
@@ -387,18 +367,19 @@ function insertTag(openTag, closeTag) {
 }
 
 function insertUrl() {
-    var url = prompt('Enter URL','https://');
-    if (url) insertTag('[url=' + url + ']','[/url]');
+    var url = prompt('Enter URL (with https://):', 'https://');
+    if (url) insertTag('[url=' + url + ']', '[/url]');
 }
 
 function insertImg() {
-    var url = prompt('Image URL','https://');
-    if (url) insertTag('[img]' + url,'[/img]');
+    var url = prompt('Enter image URL (must end with .jpg, .png, .gif, .webp):', 'https://');
+    if (url) insertTag('[img]' + url, '[/img]');
 }
 </script>
 
-</body>
+<script src="notifications.js"></script>
 
+</body>
 </html>
 
 <?php mysqli_close($link); ?>
