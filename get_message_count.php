@@ -2,29 +2,23 @@
 header('Content-Type: application/json');
 header('Cache-Control: no-cache, must-revalidate');
 
-$link = mysqli_connect('localhost', 'root', '', 'myforum');
+$conn = new mysqli("localhost", "root", "", "myforum");
 
-if (!$link) {
-    echo json_encode(['count' => 0]);
+if ($conn->connect_error) {
+    echo json_encode(["count" => 0, "error" => $conn->connect_error]);
     exit;
 }
 
-mysqli_set_charset($link, 'utf8mb4');
-
-$result = mysqli_query($link, "SELECT COUNT(*) as count FROM posts");
+$result = $conn->query("SELECT COUNT(*) as count FROM posts");
 
 if (!$result) {
-    echo json_encode(['count' => 0]);
-    mysqli_close($link);
+    echo json_encode(["count" => 0, "error" => $conn->error]);
     exit;
 }
 
-$row = mysqli_fetch_assoc($result);
+$row = $result->fetch_assoc();
 
-echo json_encode([
-    'count' => (int)$row['count'],
-    'timestamp' => time()
-]);
+echo json_encode(["count" => (int)$row["count"]]);
 
-mysqli_close($link);
+$conn->close();
 ?>
