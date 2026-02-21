@@ -8,9 +8,8 @@ self.addEventListener("notificationclick", function(event) {
     event.waitUntil(
         clients.matchAll({type: "window"}).then(function(clientList) {
             for (let i = 0; i < clientList.length; i++) {
-                let client = clientList[i];
-                if (client.url.includes("localhost") && "focus" in client) {
-                    return client.focus();
+                if (clientList[i].url.includes("localhost") && "focus" in clientList[i]) {
+                    return clientList[i].focus();
                 }
             }
             return clients.openWindow("/");
