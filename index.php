@@ -29,6 +29,7 @@ function parse_smilies($text) {
         ':nerd:' => '<img src="https://www.allsmileys.com/files/kolobok/light/63.gif" alt="*nerd*">',
         'XD' => '<img src="https://www.allsmileys.com/files/kolobok/light/52.gif" alt="XD">',
         ':dance:' => '<img src="https://www.allsmileys.com/files/kolobok/light/26.gif" alt="*dancing*">',
+        'kris+marduk' => '<img src="https://www.allsmileys.com/files/kolobok/light/41.gif" alt=!secret! >',
         ':beer:' => '<img src="https://www.allsmileys.com/files/kolobok/light/37.gif" alt=*cheers!* >',
     );
     return str_replace(array_keys($smilies), array_values($smilies), $text);
@@ -192,7 +193,18 @@ $result = mysqli_query($link, $sql);
 <body>
 <div class="forum-container">
     <div class="header">
-        WELCOME TO the  HELL, BITCH!
+    <?php
+    $quotes = [
+        "WELCOME TO the HELL, BITCH!",
+        "PIPIS LOVES YOU",
+        "SEND NUDES (OF YOUR CODE)",
+        "3.141592653589... - пароль админа",
+        "KRIS+MARDUK FOREVER",
+        "BEER HERE -> :beer:",
+        "XD XD XD"
+    ];
+    echo $quotes[array_rand($quotes)];
+    ?>
     </div>
 
     <h3>MESSages:</h3>
@@ -206,7 +218,28 @@ $result = mysqli_query($link, $sql);
                 <tr>
                     <td class="post-username">
                         <?php echo htmlspecialchars($row['username']); ?>
-                        <div class="post-date"><?php echo $row['created_at']; ?></div>
+                        <div class="post-date">
+                            <?php
+                            $timestamp = strtotime($row['created_at']);
+                            $now = time();
+                            $diff = $now - $timestamp;
+                            
+                            if ($diff < 60) {
+                                echo "just now";
+                            } elseif ($diff < 3600) {
+                                $minutes = floor($diff / 60);
+                                echo $minutes . " minute" . ($minutes != 1 ? "s" : "") . " ago";
+                            } elseif ($diff < 86400) {
+                                $hours = floor($diff / 3600);
+                                echo $hours . " hour" . ($hours != 1 ? "s" : "") . " ago";
+                            } elseif ($diff < 2592000) {
+                                $days = floor($diff / 86400);
+                                echo $days . " day" . ($days != 1 ? "s" : "") . " ago";
+                            } else {
+                                echo date("d.m.Y H:i", $timestamp);
+                            }
+                            ?>
+                        </div>
                     </td>
                     <td class="post-message">
                         <?php
@@ -224,19 +257,76 @@ $result = mysqli_query($link, $sql);
     <?php endif; ?>
 
     <div class="form-area">
-        <h4>write to a thread</h4>
-        <form method="POST" action="">
-            <label for="username">Name (or anonimous pipis):</label><br>
-            <input type="text" name="username" id="username" value="Pipis"><br><br>
+    
+    <!-- BB-коды как текстовые ссылки -->
+    <div style="margin-bottom:10px; padding:5px; background:#d0d0d0; border:1px solid #999; font-family:Verdana; font-size:10pt;">
+        <span style="color:#666;">BB-codes:</span>
+        <a href="#" onclick="insertTag('[b]', '[/b]'); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[b]bold[/b]</a> |
+        <a href="#" onclick="insertTag('[i]', '[/i]'); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[i]italic[/i]</a> |
+        <a href="#" onclick="insertTag('[u]', '[/u]'); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[u]underline[/u]</a> |
+        <a href="#" onclick="insertTag('[quote]', '[/quote]'); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[quote]quote[/quote]</a> |
+        <a href="#" onclick="insertUrl(); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[url]link[/url]</a> |
+        <a href="#" onclick="insertImg(); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[img]image[/img]</a>
+    </div>
+    
+    <h4>write to a thread</h4>
+    <form method="POST" action="">
+        <label for="username">Name (or anonimous pipis):</label><br>
+        <input type="text" name="username" id="username" value="Pipis"><br><br>
 
-            <label for="message">MESSage:</label><br>
-            <textarea name="message" id="message" required></textarea><br><br>
+        <label for="message">MESSage:</label><br>
+        <textarea name="message" id="message" required></textarea><br><br>
 
-            <input type="submit" value="push">
+        <input type="submit" value="push">
         </form>
     </div>
 
+    <!-- javascript sucks!!! links forsed me to use it -->
+
+    <script>
+    function insertTag(openTag, closeTag) {
+        var textarea = document.getElementById('message');
+        var start = textarea.selectionStart;
+        var end = textarea.selectionEnd;
+        var selectedText = textarea.value.substring(start, end);
+        
+        if (selectedText) {
+            textarea.value = textarea.value.substring(0, start) + openTag + selectedText + closeTag + textarea.value.substring(end);
+        } else {
+            textarea.value = textarea.value.substring(0, start) + openTag + closeTag + textarea.value.substring(end);
+            textarea.selectionStart = start + openTag.length;
+            textarea.selectionEnd = start + openTag.length;
+        }
+        textarea.focus();
+    }
+
+    function insertUrl() {
+        var url = prompt('Enter URL (with http:// or https://):', 'https://');
+        if (url) {
+            insertTag('[url=' + url + ']', '[/url]');
+        }
+    }
+
+    function insertImg() {
+        var url = prompt('Enter image URL:', 'https://');
+        if (url) {
+            insertTag('[img]', '[/img]');
+            var textarea = document.getElementById('message');
+            textarea.value = textarea.value.replace('[img][/img]', '[img]' + url + '[/img]');
+        }
+    }
+    </script>
+
     <div class="footer">
+        <?php
+        $total_posts = mysqli_fetch_assoc(mysqli_query($link, "SELECT COUNT(*) as count FROM posts"))['count'];
+        $last_post = mysqli_fetch_assoc(mysqli_query($link, "SELECT username, created_at FROM posts ORDER BY created_at DESC LIMIT 1"));
+        ?>
+        <div style="margin-top:10px; font-size:10pt; border-top:1px dotted #999; padding-top:5px;">
+            <strong>>>STATS:<<</strong> 
+            Total posts: <?php echo $total_posts; ?> | 
+            Last post: <?php echo $last_post ? $last_post['username'] . ' (' . date("d.m.Y H:i", strtotime($last_post['created_at'])) . ')' : 'none'; ?>
+        </div>
         <?php
         $hits_file = 'hits.txt';
         if (!file_exists($hits_file)) {
