@@ -29,6 +29,7 @@ function parse_smilies($text) {
         ':nerd:' => '<img src="https://www.allsmileys.com/files/kolobok/light/63.gif" alt="*nerd*">',
         'XD' => '<img src="https://www.allsmileys.com/files/kolobok/light/52.gif" alt="XD">',
         ':dance:' => '<img src="https://www.allsmileys.com/files/kolobok/light/26.gif" alt="*dancing*">',
+        'kris+marduk' => '<img src="https://www.allsmileys.com/files/kolobok/light/41.gif" alt=!secret! >',
         ':beer:' => '<img src="https://www.allsmileys.com/files/kolobok/light/37.gif" alt=*cheers!* >',
     );
     return str_replace(array_keys($smilies), array_values($smilies), $text);
@@ -99,6 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
         echo "<p style='color:red;'>message can't be empty!</p>";
     }
 }
+
+
 
 $sql = "SELECT id, username, message, created_at FROM posts ORDER BY created_at DESC";
 $result = mysqli_query($link, $sql);
@@ -187,8 +190,21 @@ $result = mysqli_query($link, $sql);
             font-size: 11pt;
             color: #777;
         }
+        .forum-table tr:nth-child(even) {
+            background-color: #f0f5fa;
+        }
+
+        .forum-table tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        .forum-table tr:hover {
+            background-color: #ffffcc;
+            transition: background-color 0.2s;
+        }
     </style>
 </head>
+<script src="notifications.js"></script>
 <body>
 <div class="forum-container">
     <div class="header">
@@ -257,7 +273,6 @@ $result = mysqli_query($link, $sql);
 
     <div class="form-area">
     
-    <!-- BB-коды как текстовые ссылки -->
     <div style="margin-bottom:10px; padding:5px; background:#d0d0d0; border:1px solid #999; font-family:Verdana; font-size:10pt;">
         <span style="color:#666;">BB-codes:</span>
         <a href="#" onclick="insertTag('[b]', '[/b]'); return false;" style="color:#000; text-decoration:none; border-bottom:1px dotted #666;">[b]bold[/b]</a> |
