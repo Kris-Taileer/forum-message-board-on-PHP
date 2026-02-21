@@ -194,6 +194,44 @@ input[type=submit] {
 .bb-panel a {
     text-decoration: none;
     color: #000000;
+    margin: 0 2px;
+}
+
+.bb-panel a[title] {
+    cursor: help;
+    border-bottom: 1px dashed #666;
+}
+
+
+.image-hint {
+    background: #fff0e0;
+    border: 1px solid #c60;
+    padding: 8px;
+    margin-bottom: 10px;
+    font-size: 11px;
+    line-height: 2;
+    color: #630;
+}
+
+.image-hint code {
+    background: #f0f0f0;
+    padding: 2px 4px;
+    border: 1px solid #999;
+    font-family: 'Courier New', monospace;
+}
+
+.image-hint .title {
+    font-weight: bold;
+    color: #000;
+}
+
+#enableNotifications {
+    background: #d4d0c8;
+    border: 2px outset #ffffff;
+    padding: 4px 12px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 10px;
 }
 
 .footer {
@@ -205,27 +243,26 @@ input[type=submit] {
 </style>
 </head>
 
-<button id="enableNotifications">Enable notifications</button>
-<script src="notifications.js"></script>
+<button id="enableNotifications">>> Enable notifications</button>
 
 <body>
 
 <div class="container">
 
- <div class="header">
+<div class="header">
     <?php
     $quotes = [
         "WELCOME TO the HELL, BITCH!",
         "PIPIS LOVES YOU",
         "SEND NUDES (OF YOUR CODE)",
-        "3.141592653589... - пароль админа",
+        "3.141592653589...",
         "KRIS+MARDUK FOREVER",
         "BEER HERE -> :beer:",
         "XD XD XD"
     ];
     echo $quotes[array_rand($quotes)];
     ?>
-    </div>
+</div>
 
 <div class="section-title">MESSAGES</div>
 
@@ -265,7 +302,14 @@ BBCode:
 <a href="#" onclick="insertTag('[u]','[/u]');return false;">[u]</a> |
 <a href="#" onclick="insertTag('[quote]','[/quote]');return false;">[quote]</a> |
 <a href="#" onclick="insertUrl();return false;">[url]</a> |
-<a href="#" onclick="insertImg();return false;">[img]</a>
+<a href="#" onclick="insertImg();return false;" title="Only https:// images ending with .jpg, .png, .gif, .webp">[img]</a>
+</div>
+
+<div class="image-hint">
+    <span class="title">~Image rules:~</span><br>
+    • Use <strong>https://</strong> only<br>
+    • Allowed: <code>.jpg</code> <code>.jpeg</code> <code>.png</code> <code>.gif</code> <code>.webp</code><br>
+    • Example: <code>[img]https://site.com/image.jpg[/img]</code>
 </div>
 
 <form method="POST">
@@ -306,14 +350,14 @@ BBCode:
         file_put_contents($hits_file, $hits);
         ?>
         &copy; visited >>  <?php echo $hits; ?> | 
-        &copy; 2010 MySuperForum / works on PHP and MySQL(MariaDB)
-    </div>
+        &copy; 2010 MySuperForum
+</div>
 
 </div>
 
 <script>
 function insertTag(openTag, closeTag) {
-    var textarea = document.querySelector('textarea');
+    var textarea = document.querySelector('textarea[name="message"]');
     var start = textarea.selectionStart;
     var end = textarea.selectionEnd;
     textarea.value = textarea.value.substring(0, start) + openTag +
@@ -323,18 +367,19 @@ function insertTag(openTag, closeTag) {
 }
 
 function insertUrl() {
-    var url = prompt('Enter URL','https://');
-    if (url) insertTag('[url=' + url + ']','[/url]');
+    var url = prompt('Enter URL (with https://):', 'https://');
+    if (url) insertTag('[url=' + url + ']', '[/url]');
 }
 
 function insertImg() {
-    var url = prompt('Image URL','https://');
-    if (url) insertTag('[img]' + url,'[/img]');
+    var url = prompt('Enter image URL (must end with .jpg, .png, .gif, .webp):', 'https://');
+    if (url) insertTag('[img]' + url, '[/img]');
 }
 </script>
 
-</body>
+<script src="notifications.js"></script>
 
+</body>
 </html>
 
 <?php mysqli_close($link); ?>
