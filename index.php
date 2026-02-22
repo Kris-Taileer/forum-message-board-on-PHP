@@ -18,13 +18,17 @@ function sanitize_input($text) {
 function parse_smilies($text) {
     $text = sanitize_input($text);
     $smilies = array(
-        ':)' => '<img src="https://www.allsmileys.com/files/kolobok/light/76.gif">',
-        ':(' => '<img src="https://www.allsmileys.com/files/kolobok/light/60.gif">',
-        ':D' => '<img src="https://www.allsmileys.com/files/kolobok/light/10.gif">',
-        ';)' => '<img src="https://www.allsmileys.com/files/kolobok/light/73.gif">',
-        ':P' => '<img src="https://www.allsmileys.com/files/kolobok/light/68.gif">',
-        'XD' => '<img src="https://www.allsmileys.com/files/kolobok/light/52.gif">',
-        ':beer:' => '<img src="https://www.allsmileys.com/files/kolobok/light/37.gif">'
+        ':)' => '<img src="https://www.allsmileys.com/files/kolobok/light/76.gif" alt=":)">',
+        ':(' => '<img src="https://www.allsmileys.com/files/kolobok/light/60.gif" alt=":(">',
+        ':D' => '<img src="https://www.allsmileys.com/files/kolobok/light/10.gif" alt=":D" >',
+        ';)' => '<img src="https://www.allsmileys.com/files/kolobok/light/73.gif" alt=";)" >',
+        ':P' => '<img src="https://www.allsmileys.com/files/kolobok/light/68.gif" alt=":P">',
+        '8)' => '<img src="https://www.allsmileys.com/files/kolobok/light/23.gif" alt="8)">',
+        ':nerd:' => '<img src="https://www.allsmileys.com/files/kolobok/light/63.gif" alt="*nerd*">',
+        'XD' => '<img src="https://www.allsmileys.com/files/kolobok/light/52.gif" alt="XD">',
+        ':dance:' => '<img src="https://www.allsmileys.com/files/kolobok/light/26.gif" alt="*dancing*">',
+        'kris+marduk' => '<img src="https://www.allsmileys.com/files/kolobok/light/41.gif" alt=!secret! >',
+        ':beer:' => '<img src="https://www.allsmileys.com/files/kolobok/light/37.gif" alt=*cheers!* >'
     );
     return str_replace(array_keys($smilies), array_values($smilies), $text);
 }
