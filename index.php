@@ -28,13 +28,17 @@ function sanitize_input($text) {
 function parse_smilies($text) {
     $text = sanitize_input($text);
     $smilies = array(
-        ':)' => '<img src="https://www.allsmileys.com/files/kolobok/light/76.gif">',
-        ':(' => '<img src="https://www.allsmileys.com/files/kolobok/light/60.gif">',
-        ':D' => '<img src="https://www.allsmileys.com/files/kolobok/light/10.gif">',
-        ';)' => '<img src="https://www.allsmileys.com/files/kolobok/light/73.gif">',
-        ':P' => '<img src="https://www.allsmileys.com/files/kolobok/light/68.gif">',
-        'XD' => '<img src="https://www.allsmileys.com/files/kolobok/light/52.gif">',
-        ':beer:' => '<img src="https://www.allsmileys.com/files/kolobok/light/37.gif">'
+        ':)' => '<img src="https://www.allsmileys.com/files/kolobok/light/76.gif" alt=":)">',
+        ':(' => '<img src="https://www.allsmileys.com/files/kolobok/light/60.gif" alt=":(">',
+        ':D' => '<img src="https://www.allsmileys.com/files/kolobok/light/10.gif" alt=":D" >',
+        ';)' => '<img src="https://www.allsmileys.com/files/kolobok/light/73.gif" alt=";)" >',
+        ':P' => '<img src="https://www.allsmileys.com/files/kolobok/light/68.gif" alt=":P">',
+        '8)' => '<img src="https://www.allsmileys.com/files/kolobok/light/23.gif" alt="8)">',
+        ':nerd:' => '<img src="https://www.allsmileys.com/files/kolobok/light/63.gif" alt="*nerd*">',
+        'XD' => '<img src="https://www.allsmileys.com/files/kolobok/light/52.gif" alt="XD">',
+        ':dance:' => '<img src="https://www.allsmileys.com/files/kolobok/light/26.gif" alt="*dancing*">',
+        'kris+marduk' => '<img src="https://www.allsmileys.com/files/kolobok/light/41.gif" alt=!secret! >',
+        ':beer:' => '<img src="https://www.allsmileys.com/files/kolobok/light/37.gif" alt=*cheers!* >'
     );
     return str_replace(array_keys($smilies), array_values($smilies), $text);
 }
@@ -64,6 +68,25 @@ function parse_bbcodes($text) {
     }, $text);
 
     return $text;
+}
+
+function clean_username($username) {
+    $username = strip_tags($username);
+    $username = preg_replace('/[<>"\'\&\;#\/]/', '', $username);
+    $username = trim($username);
+    $username = substr($username, 0, 50);
+    $blocked = ['admin','ADMIN', 'root','ROOT', 'moderator','MODERATOR', 'administrator','ADMINISTRATOR'];
+    if (in_array(strtolower($username), $blocked)) {
+        $username = 'Wanted to be an admin, forced to be a PIPIS';
+    }
+    if (empty($username)) {
+        $username = 'WASEMPTYpipis';
+    }
+    return $username;
+}
+
+function safe_output($text) {
+    return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['message']) || isset($_FILES['attachment']))) {
@@ -351,12 +374,11 @@ input[type=submit] {
 <?php while ($row = mysqli_fetch_assoc($result)): ?>
 <tr>
 <td class="author">
-<?php echo htmlspecialchars($row['username']); ?><br>
-<span style="font-weight:normal;font-size:11px;">
-<?php echo date("d.m.Y H:i", strtotime($row['created_at'])); ?>
-</span>
+    <?php echo safe_output($row['username']); ?><br>
+    <span style="font-weight:normal;font-size:11px;">
+        <?php echo date("d.m.Y H:i", strtotime($row['created_at'])); ?>
+    </span>
 </td>
-
 <td class="post">
 <?php
 $message = htmlspecialchars($row['message'], ENT_QUOTES, 'UTF-8');
@@ -432,8 +454,8 @@ BBCode:
         $last_post = mysqli_fetch_assoc(mysqli_query($link, "SELECT username, created_at FROM posts ORDER BY created_at DESC LIMIT 1"));
         ?>
         <div style="margin-top:10px; font-size:10pt; border-top:1px dotted #999; padding-top:5px;">
-            <strong>>>STATS:<<</strong> 
-            Total posts: <?php echo $total_posts; ?> | 
+            <strong>>>STATS:<<</strong>
+            Total posts: <?php echo $total_posts; ?> |
             Last post: <?php echo $last_post ? $last_post['username'] . ' (' . date("d.m.Y H:i", strtotime($last_post['created_at'])) . ')' : 'none'; ?>
         </div>
         <?php
@@ -444,7 +466,7 @@ BBCode:
         $hits = (int)file_get_contents($hits_file) + 1;
         file_put_contents($hits_file, $hits);
         ?>
-        &copy; visited >>  <?php echo $hits; ?> | 
+        &copy; visited >>  <?php echo $hits; ?> |
         &copy; 2010 MySuperForum
 </div>
 
