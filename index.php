@@ -6,6 +6,16 @@ if (!$link) {
 
 mysqli_set_charset($link, 'utf8mb4');
 
+$upload_dir = 'uploads/';
+$max_file_size = 5 * 1024 * 1024;
+$allowed_types = [
+    'image/jpeg' => 'jpg',
+    'image/png' => 'png',
+    'image/gif' => 'gif',
+    'image/webp' => 'webp',
+    'text/plain' => 'txt'
+];
+
 function sanitize_input($text) {
     $text = preg_replace('/javascript:/i', 'blocked:', $text);
     $text = preg_replace('/on\w+=/i', 'blocked=', $text);
@@ -56,20 +66,51 @@ function parse_bbcodes($text) {
     return $text;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
-    $username = isset($_POST['username']) ? trim($_POST['username']) : 'Anonymous';
-    $message = trim($_POST['message']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['message']) || isset($_FILES['attachment']))) {
+    $username = isset($_POST['username']) ? $_POST['username'] : 'Pipis';
+    $message = trim($_POST['message'] ?? '');
+    $file_name = NULL;
+    $file_path = NULL;
 
-    if (!empty($message)) {
-        $username = mysqli_real_escape_string($link, $username);
-        $message = mysqli_real_escape_string($link, $message);
-        mysqli_query($link, "INSERT INTO posts (username, message) VALUES ('$username', '$message')");
+    if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
+        $file_tmp = $_FILES['attachment']['tmp_name'];
+        $file_size = $_FILES['attachment']['size'];
+        $file_type = $_FILES['attachment']['type'];
+        $original_name = $_FILES['attachment']['name'];
+        
+        if ($file_size > $max_file_size) {
+            die("<p style='color:red'>File too big. Max 5MB.</p>");
+        }
+        
+        if (!isset($allowed_types[$file_type])) {
+            die("<p style='color:red'>File type not allowed. Only JPG, PNG, GIF, WEBP, TXT.</p>");
+        }
+        
+        $ext = $allowed_types[$file_type];
+        $new_filename = time() . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
+        $file_path = $upload_dir . $new_filename;
+        
+        if (move_uploaded_file($file_tmp, $file_path)) {
+            $file_name = $original_name;
+        }
+    }
+
+    if (!empty($message) || $file_name) {
+        $username = clean_username($username);
+
+        $stmt = mysqli_prepare($link, "INSERT INTO posts (username, message, file_name, file_path) VALUES (?, ?, ?, ?)");
+        mysqli_stmt_bind_param($stmt, "ssss", $username, $message, $file_name, $file_path);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        
         header('Location: ' . $_SERVER['PHP_SELF']);
         exit;
     }
 }
 
-$result = mysqli_query($link, "SELECT id, username, message, created_at FROM posts ORDER BY created_at DESC");
+$result = mysqli_query($link, "SELECT id, username, message, created_at, file_name, file_path FROM posts ORDER BY created_at DESC");
+
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -240,6 +281,41 @@ input[type=submit] {
     font-size: 11px;
     text-align: center;
 }
+.attachment {
+    margin-top: 10px;
+    padding: 5px;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+}
+.attachment img {
+    max-width: 300px;
+    max-height: 200px;
+    margin-top: 5px;
+}
+.attachment-box {
+    margin-top: 10px;
+    padding: 8px;
+    background: #f0f0f0;
+    border: 1px solid #999;
+    border-radius: 3px;
+    font-size: 11px;
+}
+
+.attachment-box img {
+    max-width: 300px;
+    max-height: 200px;
+    margin-top: 5px;
+    border: 1px solid #666;
+}
+
+.attachment-box a {
+    color: #000080;
+    text-decoration: none;
+}
+
+.attachment-box a:hover {
+    text-decoration: underline;
+}
 </style>
 </head>
 
@@ -287,6 +363,21 @@ $message = htmlspecialchars($row['message'], ENT_QUOTES, 'UTF-8');
 $message = parse_bbcodes($message);
 $message = parse_smilies($message);
 echo $message;
+
+if (!empty($row['file_path']) && file_exists($row['file_path'])) {
+    $ext = strtolower(pathinfo($row['file_path'], PATHINFO_EXTENSION));
+    echo '<div style="margin-top:10px; padding:8px; background:#f0f0f0; border:1px solid #999; border-radius:3px;">';
+    echo '<strong>>>>Attached file:</strong> ';
+    
+    if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+        echo '<br><a href="' . htmlspecialchars($row['file_path']) . '" target="_blank">';
+        echo '<img src="' . htmlspecialchars($row['file_path']) . '" style="max-width:300px; max-height:200px; margin-top:5px; border:1px solid #666;">';
+        echo '</a>';
+    } else {
+        echo '<a href="' . htmlspecialchars($row['file_path']) . '" target="_blank">' . htmlspecialchars($row['file_name']) . '</a>';
+    }
+    echo '</div>';
+}
 ?>
 </td>
 </tr>
@@ -312,7 +403,7 @@ BBCode:
     • Example: <code>[img]https://site.com/image.jpg[/img]</code>
 </div>
 
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
 <table class="form-table">
 <tr>
 <td width="180"><b>Name:</b></td>
@@ -321,6 +412,10 @@ BBCode:
 <tr>
 <td><b>Message:</b></td>
 <td><textarea name="message" required></textarea></td>
+</tr>
+<tr>
+<td><b>Attachment:</b></td>
+<td><input type="file" name="attachment"></td>
 </tr>
 <tr>
 <td></td>
